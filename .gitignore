@@ -1,0 +1,22 @@
+# Python virtual environment
+venv/
+env/
+.venv/
+
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+test_alerts.db
+test_*.db
+
+# Node / Scratch
+scratch/
+node_modules/

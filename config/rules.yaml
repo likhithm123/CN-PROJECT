@@ -1,0 +1,75 @@
+rules:
+  - id: SIG-001
+    name: "TCP Port Scan"
+    description: "Rapid scanning of multiple destination ports from a single source IP"
+    protocol: "TCP"
+    severity: "HIGH"
+    conditions:
+      unique_dst_ports_min: 8
+      window_seconds: 5.0
+      syn_ratio_min: 0.8
+    score: 85
+
+  - id: SIG-002
+    name: "TCP SYN Flood"
+    description: "Abnormal burst of TCP SYN packets with minimal ACK completions"
+    protocol: "TCP"
+    severity: "CRITICAL"
+    conditions:
+      syn_count_min: 30
+      syn_ack_ratio_min: 4.0
+      packets_per_sec_min: 25.0
+    score: 95
+
+  - id: SIG-003
+    name: "ICMP Flood (Ping of Death / Flood)"
+    description: "High volume of ICMP echo requests targeting bandwidth exhaustion"
+    protocol: "ICMP"
+    severity: "HIGH"
+    conditions:
+      icmp_packets_per_sec_min: 30.0
+      packet_count_min: 25
+    score: 85
+
+  - id: SIG-004
+    name: "UDP Volumetric Flood"
+    description: "High bandwidth burst of UDP datagrams"
+    protocol: "UDP"
+    severity: "CRITICAL"
+    conditions:
+      udp_packets_per_sec_min: 40.0
+      bytes_per_sec_min: 50000.0
+    score: 90
+
+  - id: SIG-005
+    name: "Sensitive Port Probing"
+    description: "Connection attempts to sensitive administration services (SSH, Telnet, RDP, SMB)"
+    protocol: "TCP"
+    severity: "MEDIUM"
+    conditions:
+      target_ports: [22, 23, 3389, 445, 135, 139, 1433, 3306]
+      connection_attempts_min: 3
+    score: 65
+
+  - id: SIG-006
+    name: "HTTP/Service Brute Force Pattern"
+    description: "Repeated rapid connection attempts to web or authentication service"
+    protocol: "TCP"
+    severity: "HIGH"
+    conditions:
+      target_ports: [80, 443, 8080, 8443, 21]
+      packets_per_sec_min: 35.0
+      flow_duration_max: 3.0
+    score: 75
+
+  - id: SIG-007
+    name: "DNS Tunneling & Covert Exfiltration"
+    description: "Abnormally long DNS queries, deep subdomain nesting, or high Shannon entropy indicative of covert data tunneling"
+    protocol: "UDP"
+    severity: "HIGH"
+    conditions:
+      target_ports: [53]
+      dns_entropy_min: 3.5
+      dns_length_min: 32
+    score: 88
+

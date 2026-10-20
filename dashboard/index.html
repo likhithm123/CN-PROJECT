@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hybrid NIDS & Adaptive QoS SOC Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon">🛡️</div>
+      <div>
+        <h1>Hybrid NIDS & Adaptive QoS Mitigation</h1>
+        <p>BCSE308P Real-Time Cyber-Defense Console</p>
+      </div>
+    </div>
+    <div class="header-status">
+      <div id="connectionStatus" class="status-badge">
+        <span class="pulse-dot"></span> CONNECTING...
+      </div>
+      <button id="btnToggleTraffic" class="btn btn-primary" style="font-size:0.75rem; padding:0.4rem 0.8rem;">
+        Pause Benign Traffic
+      </button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- KPI Metric Cards Grid -->
+    <div class="metrics-grid">
+      <div class="card metric-card info">
+        <div class="metric-header">
+          <span>Packets / Sec</span>
+          <span>⚡</span>
+        </div>
+        <div id="valPps" class="metric-value">0</div>
+        <div class="metric-sub">Real-Time Throughput</div>
+      </div>
+
+      <div class="card metric-card info">
+        <div class="metric-header">
+          <span>Bandwidth</span>
+          <span>🌐</span>
+        </div>
+        <div id="valBandwidth" class="metric-value">0 KB/s</div>
+        <div class="metric-sub">Aggregated Flow Bitrate</div>
+      </div>
+
+      <div class="card metric-card">
+        <div class="metric-header">
+          <span>Active Flows</span>
+          <span>🔄</span>
+        </div>
+        <div id="valFlows" class="metric-value">0</div>
+        <div class="metric-sub">5-Tuple Monitored Sessions</div>
+      </div>
+
+      <div class="card metric-card warning">
+        <div class="metric-header">
+          <span>Total Alerts</span>
+          <span>⚠️</span>
+        </div>
+        <div id="valAlerts" class="metric-value">0</div>
+        <div class="metric-sub">Signature & ML Detections</div>
+      </div>
+
+      <div class="card metric-card critical">
+        <div class="metric-header">
+          <span>Critical Events</span>
+          <span>🚨</span>
+        </div>
+        <div id="valCritical" class="metric-value">0</div>
+        <div class="metric-sub">Risk Score &gt; 80%</div>
+      </div>
+
+      <div class="card metric-card success">
+        <div class="metric-header">
+          <span>Throttled IPs</span>
+          <span>🛡️</span>
+        </div>
+        <div id="valThrottled" class="metric-value">0</div>
+        <div class="metric-sub">Active QoS Rate Limits</div>
+      </div>
+    </div>
+
+    <!-- Attack Simulation & Demo Control Bar -->
+    <div class="card">
+      <div class="section-header" style="margin-bottom: 0.5rem;">
+        <span class="section-title">🚀 Interactive Threat Injection & Review Demos</span>
+        <span class="section-subtitle">Trigger live attack sequences to demonstrate real-time hybrid detection & QoS response</span>
+      </div>
+      <div class="sim-panel">
+        <button id="btnSimScan" class="btn btn-warning">
+          <span>🔍</span> Simulate TCP Port Scan
+        </button>
+        <button id="btnSimSyn" class="btn btn-danger">
+          <span>💥</span> Simulate SYN Flood
+        </button>
+        <button id="btnSimIcmp" class="btn btn-danger">
+          <span>📡</span> Simulate ICMP Flood
+        </button>
+        <button id="btnSimUdp" class="btn btn-primary">
+          <span>🌊</span> Simulate UDP Flood
+        </button>
+        <button id="btnSimAnomaly" class="btn btn-purple">
+          <span>🧬</span> Simulate Zero-Day ML Anomaly
+        </button>
+      </div>
+    </div>
+
+    <!-- Wireshark PCAP/PCAPNG Forensics & File Ingestion Panel -->
+    <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+      <div class="section-header" style="margin-bottom: 0.8rem;">
+        <div>
+          <span class="section-title">🦈 Wireshark & PCAP/PCAPNG Offline Forensics</span>
+          <span class="section-subtitle">Deep packet inspection, flow reconstruction, and hybrid risk classification on raw packet capture traces</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <label style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Sample Wireshark Trace:</label>
+          <select id="pcapSampleSelect" class="btn" style="background: rgba(18, 24, 38, 0.8); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.45rem 0.8rem; font-size: 0.8rem; border-radius: 6px;">
+            <option value="wireshark_dns_attack.pcapng">wireshark_dns_attack.pcapng (DNS Tunneling Attack)</option>
+            <option value="attack_dns_exfiltration.pcap">attack_dns_exfiltration.pcap (Covert Exfiltration)</option>
+            <option value="benign_dns_traffic.pcap">benign_dns_traffic.pcap (Normal Traffic)</option>
+            <option value="non_dns_traffic.pcap">non_dns_traffic.pcap (Generic Network Traffic)</option>
+          </select>
+          <button id="btnAnalyzeSample" class="btn btn-primary" style="padding: 0.45rem 1rem; font-size: 0.8rem;">
+            <span>⚡</span> Analyze Sample
+          </button>
+        </div>
+
+        <div style="color: var(--text-muted); font-size: 0.8rem;">— OR —</div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="file" id="pcapFileInput" accept=".pcap,.pcapng,.cap" style="display: none;">
+          <button id="btnChoosePcap" class="btn" style="background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border-color); color: var(--text-main); padding: 0.45rem 1rem; font-size: 0.8rem;">
+            <span>📁</span> Select Custom PCAP / PCAPNG
+          </button>
+          <span id="pcapFileName" style="font-size: 0.75rem; color: var(--text-muted); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">No file chosen</span>
+          <button id="btnUploadPcap" class="btn btn-success" style="padding: 0.45rem 1rem; font-size: 0.8rem; display: none;">
+            <span>🚀</span> Upload & Analyze
+          </button>
+        </div>
+      </div>
+
+      <!-- PCAP Forensics Result Box -->
+      <div id="pcapResultsBox" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(10, 14, 23, 0.7); border-radius: 8px; border: 1px solid rgba(0, 240, 255, 0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+          <span style="font-weight: 600; color: var(--accent-cyan); font-size: 0.9rem;" id="pcapReportTitle">Forensic Analysis Report</span>
+          <span id="pcapReportBadge" class="badge badge-success">ANALYSIS COMPLETE</span>
+        </div>
+        <div id="pcapStatsSummary" style="display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.8rem; margin-bottom: 0.8rem; color: var(--text-muted);">
+        </div>
+        <div class="table-responsive">
+          <table style="font-size: 0.8rem;">
+            <thead>
+              <tr>
+                <th>Source IP</th>
+                <th>Destination</th>
+                <th>Proto</th>
+                <th>Detected Threat</th>
+                <th>Agreement Type</th>
+                <th>Risk Score</th>
+                <th>Severity</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="pcapThreatsBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Main Workspace Grid -->
+    <div class="main-grid">
+
+      <!-- Left Column: Charts and Traffic Tables -->
+      <div class="charts-wrapper">
+
+        <!-- Real-Time Traffic Graph -->
+        <div class="card">
+          <div class="section-header">
+            <span class="section-title">📈 Real-Time Network Telemetry</span>
+            <span class="section-subtitle">Instantaneous Packets/sec (Cyan) and Bandwidth KB/s (Purple)</span>
+          </div>
+          <div class="chart-box">
+            <canvas id="trafficLineChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Live Monitored Flows Table -->
+        <div class="card">
+          <div class="section-header">
+            <span class="section-title">📡 Active 5-Tuple Network Flows</span>
+            <span class="section-subtitle">Real-time flow aggregation, packet rates, and hybrid risk classification</span>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th>Destination</th>
+                  <th>Proto</th>
+                  <th>Packets</th>
+                  <th>PPS</th>
+                  <th>Risk Score</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="liveFlowsBody">
+                <tr>
+                  <td colspan="7" style="text-align:center; color:var(--text-muted); padding:1.5rem;">
+                    Awaiting network flow telemetry...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Adaptive QoS Mitigation & Feedback Loop Table -->
+        <div class="card">
+          <div class="section-header">
+            <span class="section-title">🛡️ Adaptive QoS Traffic Control & Feedback Loop</span>
+            <span class="section-subtitle">Dynamic bandwidth throttling, HTB classes, and automated step-down restoration</span>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Host IP</th>
+                  <th>QoS Tier</th>
+                  <th>Bandwidth Ceiling</th>
+                  <th>Priority</th>
+                  <th>Enforcement Rationale</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="qosPoliciesBody">
+                <tr>
+                  <td colspan="6" style="text-align:center; color:var(--text-muted); padding:1rem;">
+                    All hosts operating at default standard QoS tier.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Threat Distribution & Security Alerts Stream -->
+      <div class="charts-wrapper">
+
+        <!-- Threat Distribution Donut -->
+        <div class="card">
+          <div class="section-header">
+            <span class="section-title">📊 Threat Vector Distribution</span>
+            <span class="section-subtitle">Class breakdown of active network flows</span>
+          </div>
+          <div class="chart-box" style="height: 200px;">
+            <canvas id="threatDonutChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Real-Time Security Alerts Feed -->
+        <div class="card" style="flex: 1;">
+          <div class="section-header">
+            <span class="section-title">🚨 Real-Time Security Alerts</span>
+            <span class="section-subtitle">Hybrid Fusion Engine output & automated responses</span>
+          </div>
+          <div id="alertsFeed" class="alerts-feed">
+            <div style="color:var(--text-muted); font-size:0.85rem; padding:1.5rem; text-align:center;">
+              Listening for security alerts...
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
