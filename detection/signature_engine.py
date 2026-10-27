@@ -120,7 +120,7 @@ class SignatureEngine:
                 dns_len = float(features.get("dns_length", 0.0) or flow.get("dns_length", 0.0))
                 min_entropy = cond.get("dns_entropy_min", 3.5)
                 min_len = cond.get("dns_length_min", 32)
-                if (dst_port == 53 or flow.get("dst_port") == 53) and (dns_entropy >= min_entropy or dns_len >= min_len):
+                if (dst_port == 53 or flow.get("dst_port") == 53) and ((dns_len >= min_len and dns_entropy >= min_entropy) or dns_len >= 55):
                     matched = True
                     detail_str = f"DNS Tunneling detected: query length {int(dns_len)}, entropy {dns_entropy:.2f} (threshold: {min_entropy})"
 

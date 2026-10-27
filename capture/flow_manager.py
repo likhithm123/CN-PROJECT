@@ -100,18 +100,15 @@ class FlowManager:
         src_entry["last_seen"] = ts
         src_entry["packet_count"] += 1
         src_entry["byte_count"] += pkt_len
-        src_entry["packet_count"] += 1
-        src_entry["byte_count"] += pkt_len
 
         return flow_key, flow
 
     def get_active_flows(self) -> List[Dict[str, Any]]:
-        """Return list of active flows with current duration updated."""
-        now = time.time()
+        """Return list of active flows with accurate packet-trace duration."""
         active = []
         for key, flow in list(self.flows.items()):
             flow_copy = dict(flow)
-            flow_copy["duration"] = max(0.001, now - flow["start_time"])
+            flow_copy["duration"] = max(0.001, flow["last_seen"] - flow["start_time"])
             active.append(flow_copy)
         return active
 

@@ -16,7 +16,7 @@ class FeatureExtractor:
         packets = flow_data.get("packets", 1)
         bytes_total = flow_data.get("bytes", 0)
 
-        eff_duration = max(1.0, duration) if packets <= 2 else max(0.05, duration)
+        eff_duration = max(1.0, duration) if packets <= 10 else max(0.05, duration)
         packets_per_sec = packets / eff_duration
         bytes_per_sec = bytes_total / eff_duration
         avg_packet_size = bytes_total / max(1, packets)

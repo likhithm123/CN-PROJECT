@@ -20,3 +20,8 @@ test_*.db
 # Node / Scratch
 scratch/
 node_modules/
+
+# Uploaded temporary analysis files
+uploads/*
+!uploads/sample_pcaps/
+
